@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <pcap.h>
+#include <netinet/in.h>
+#include <netinet/if_ether.h>
 
 int main() { 
 	char *devname; // name of the device
@@ -73,6 +75,32 @@ int main() {
 	printf("Device: %s\n", devname);
 	printf("Ip address: %s\n", ip);
 	printf("Subnet mask: %s\n", subnet_mask);
+
+	/* Open the device for live capture */	
+	pcap_t *handle;
+	struct pcap_pkthdr packet_header;
+	const u_char *packet; 
+	int packet_count_limit = 1; // Number of packets to capture
+	int timeout_limit = 10000; // milliseconds
+
+	handle = pcap_open_live(
+		devname, 
+		BUFSIZ,
+		packet_count_limit,
+		timeout_limit, 
+		errbuf
+	);
+
+	/* Capture a packet */
+	packet = pcap_next(handle, &packet_header);
+	if (packet == NULL) { 
+		printf("Unable to capture a packet\n");
+		return 2;
+	}
+
+	/* Print packet info */
+	printf("Packet capture length: %d\n", packet_header.caplen);
+	printf("Packet total length: %d\n", packet_header.len);
 
 	return 0;
 }
