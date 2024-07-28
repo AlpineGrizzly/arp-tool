@@ -1,6 +1,7 @@
-# arp-tool-
+# arp-tool
 Tool that will monitor arp traffic; Research tool primarily used to learn the libpcap library for myself. 
 
+Primarily followed the tutorial [here](https://www.devdungeon.com/content/using-libpcap-c#google_vignette) and deviated a few times due to deprecated functions and curiosity.
 
 ## Requirements
 ```
