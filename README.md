@@ -14,7 +14,8 @@ sudo apt-get install -y libpcap-dev
 ```
 
 ## Usage
-Walking through the different steps of using the library, getting device info, getting fields from traffic, etc. 
+Walking through the different steps of using the library, getting device info, getting fields from traffic, etc.
+NOTE: Ensure you have root access in able to have access to the NIC interface when opening. 
 ```
 ./arptool
 Devices found

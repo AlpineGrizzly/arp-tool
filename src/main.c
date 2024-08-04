@@ -83,6 +83,8 @@ int main() {
 	int packet_count_limit = 1; // Number of packets to capture
 	int timeout_limit = 10000; // milliseconds
 
+	printf("Going to capture...\n");
+
 	handle = pcap_open_live(
 		devname, 
 		BUFSIZ,
@@ -90,6 +92,10 @@ int main() {
 		timeout_limit, 
 		errbuf
 	);
+	if (handle == NULL) { 
+		printf("Unable to open %s\n", devname);
+		return 2;
+	}
 
 	/* Capture a packet */
 	packet = pcap_next(handle, &packet_header);
