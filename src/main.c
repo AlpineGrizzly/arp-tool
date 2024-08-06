@@ -48,15 +48,23 @@ void packet_handler(
 int main() { 
 	char *devname; // name of the device
 	char errbuf[PCAP_ERRBUF_SIZE]; // error buffer
-	pcap_if_t *all_devs; // arra
-
+	pcap_if_t *all_devs; // array of devices
+	char ip[13];
+	char subnet_mask[13];
+	bpf_u_int32 ip_raw; // Ip address as integer
+	bpf_u_int32 subnet_mask_raw; // Subnet mask as integer
+	struct in_addr address; // used for both ip and subnet
+	pcap_t *handle;
+	int snapshot_len = 1028;
+	int promiscious = 0;
+	int timeout_limit = 100; // milliseconds (using delay wireshark uses)
+	
 	/* Find a device */
 	// Can simple grab default capture device with pcap_lookupdev();
 	if (pcap_findalldevs(&all_devs, errbuf) < 0) { 
 		fprintf(stderr, "Error trying to find devices");
 		return 1;
 	}
-
 	devname = all_devs->name; // Grab the default capture device
 	
 	/* Print all devices */
@@ -69,13 +77,6 @@ int main() {
 
 	/* Get device info */
 	printf("Getting device info for default cap dev %s\n", devname);
-
-	char ip[13];
-	char subnet_mask[13];
-	bpf_u_int32 ip_raw; // Ip address as integer
-	bpf_u_int32 subnet_mask_raw; // Subnet mask as integer
-	struct in_addr address; // used for both ip and subnet
-
 	int lookup_return_code = pcap_lookupnet(
 		devname, 
 		&ip_raw, 
@@ -109,13 +110,7 @@ int main() {
 	printf("Subnet mask: %s\n", subnet_mask);
 
 	/* Open the device for live capture */	
-	pcap_t *handle;
-	int snapshot_len = 1028;
-	int promiscious = 0;
-	int timeout_limit = 100; // milliseconds (using delay wireshark uses)
-
 	printf("Going to capture...\n");
-
 	handle = pcap_open_live(
 		devname, 
 		snapshot_len,
