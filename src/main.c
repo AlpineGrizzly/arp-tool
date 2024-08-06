@@ -29,12 +29,14 @@ void packet_handler(
 	// Hardcody when it comes to adding the padding
 	eth_header = (struct ether_header *)packet;
 	if (ntohs(eth_header->ether_type) == ETHERTYPE_IP) { 
-		printf("|IP    |");
+		printf("|IPV4  |");
 	} else if (ntohs(eth_header->ether_type) == ETHERTYPE_ARP) { 
 		printf("|ARP   |");
 	} else if (ntohs(eth_header->ether_type) == ETHERTYPE_REVARP) { 
 		printf("|RARP  |"); // Obsolete protocol according to google
-	} else { 
+	} else if (ntohs(eth_header->ether_type) == ETHERTYPE_IPV6) { 
+		printf("|IPV6  |");
+	} else {
 		printf("|0x%x|", ntohs(eth_header->ether_type));
 	}
 
