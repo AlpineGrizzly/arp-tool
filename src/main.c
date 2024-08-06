@@ -13,6 +13,36 @@
 #include <netinet/in.h>
 #include <netinet/if_ether.h>
 
+void print_packet_info(const struct pcap_pkthdr* header) { 
+	printf("caplen:%-4d|Totlen:%-4d|\n", header->caplen,header->len);
+	return;
+}
+
+void packet_handler(
+	u_char *args, 
+	const struct pcap_pkthdr* header, 
+	const u_char* packet
+) { 
+	// Determine packet type 
+	struct ether_header *eth_header; 
+
+	// Hardcody when it comes to adding the padding
+	eth_header = (struct ether_header *)packet;
+	if (ntohs(eth_header->ether_type) == ETHERTYPE_IP) { 
+		printf("|IP    |");
+	} else if (ntohs(eth_header->ether_type) == ETHERTYPE_ARP) { 
+		printf("|ARP   |");
+	} else if (ntohs(eth_header->ether_type) == ETHERTYPE_REVARP) { 
+		printf("|RARP  |"); // Obsolete protocol according to google
+	} else { 
+		printf("|0x%x|", ntohs(eth_header->ether_type));
+	}
+
+	// Print length information
+	print_packet_info(header);
+	return;
+}
+
 int main() { 
 	char *devname; // name of the device
 	char errbuf[PCAP_ERRBUF_SIZE]; // error buffer
@@ -78,17 +108,16 @@ int main() {
 
 	/* Open the device for live capture */	
 	pcap_t *handle;
-	struct pcap_pkthdr packet_header;
-	const u_char *packet; 
-	int packet_count_limit = 1; // Number of packets to capture
-	int timeout_limit = 10000; // milliseconds
+	int snapshot_len = 1028;
+	int promiscious = 0;
+	int timeout_limit = 100; // milliseconds (using delay wireshark uses)
 
 	printf("Going to capture...\n");
 
 	handle = pcap_open_live(
 		devname, 
-		BUFSIZ,
-		packet_count_limit,
+		snapshot_len,
+		promiscious,
 		timeout_limit, 
 		errbuf
 	);
@@ -97,16 +126,9 @@ int main() {
 		return 2;
 	}
 
-	/* Capture a packet */
-	packet = pcap_next(handle, &packet_header);
-	if (packet == NULL) { 
-		printf("Unable to capture a packet\n");
-		return 2;
-	}
-
-	/* Print packet info */
-	printf("Packet capture length: %d\n", packet_header.caplen);
-	printf("Packet total length: %d\n", packet_header.len);
+	/* Capture packets in a loop and print information */
+	pcap_loop(handle, 0, packet_handler, NULL);
+	pcap_close(handle);
 
 	return 0;
 }
